@@ -26,7 +26,8 @@ import logging
 import numpy as np
 from sklearn.metrics import auc
 from utils import volumes
-from cryodrgn import mrc, utils
+from cryodrgn import utils
+from cryodrgn import mrcfile as mrc
 
 logging.basicConfig(
     level=logging.INFO,
@@ -107,7 +108,7 @@ def align_volumes(
     data, header = mrc.parse_mrc(vol_path)
     header.update_origin(0.0, 0.0, 0.0)
     header.update_apix(apix)
-    mrc.write(vol_path, data, header)
+    mrc.write_mrc(vol_path, data, header)
 
     flip_str = "--flip" if flip else ""
     log_file = os.path.splitext(vol_path)[0] + ".txt"
@@ -188,8 +189,12 @@ def main(args: argparse.Namespace) -> None:
             )
 
         gt_path = gt_paths[particle_i]
+
         gen_vol = generator(z[particle_i, :])
-        mrc.write(gen_paths[-1], gen_vol.astype(np.float32))
+        if hasattr(gen_vol, "detach"):
+            gen_vol = gen_vol.detach().cpu().numpy()
+        mrc.write_mrc(gen_paths[-1], gen_vol.astype(np.float32))
+            
         if not os.path.isabs(gt_path) and args.gt_paths is not None:
             gt_path = os.path.join(os.path.dirname(args.gt_paths), gt_path)
 

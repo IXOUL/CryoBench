@@ -15,7 +15,8 @@ from typing import Optional, Callable, Union
 import numpy as np
 import pandas as pd
 import torch
-from cryodrgn import fft, models, mrc
+from cryodrgn import fft, models
+from cryodrgn import mrcfile as mrc
 
 logger = logging.getLogger(__name__)
 
